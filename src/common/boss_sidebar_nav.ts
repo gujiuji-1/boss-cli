@@ -2,34 +2,32 @@ import type { Page } from 'puppeteer-core';
 import { SIDEBAR_NAV_AFTER_CLICK_MS, sleepRandom } from '../browser/index.js';
 
 const SIDEBAR_NAV_WAIT_MS = 15_000;
-// 2026-07 起 Boss（index v10718+）SPA 侧栏菜单项对程序化 click / dispatchMouseEvent
-// 不再触发路由导航，只有真实指针事件才跳转。故点击后先短等，超时则回退到 page.goto 直达。
-const SIDEBAR_CLICK_NAV_WAIT_MS = 5_000;
 
-const buildPathReachedPredicate = (): string =>
-  `((path) => {
+const buildPathReachedPredicate = (targetPath: string): string =>
+  `(() => {
       try {
         const p = window.location.pathname.replace(/\\/+$/, "") || "/";
-        return p === path;
+        return p === ${JSON.stringify(targetPath)};
       } catch {
         return false;
       }
-    })`;
+    })()`;
 
 /**
- * 点击 Boss 左侧 `.menu-list` 中的菜单项，并等待导航到给定 pathname（如 `/web/chat/index`）。
- * 若合成点击未触发导航（Boss v10718+ SPA 对程序化点击无响应），回退到 `page.goto` 直达目标 URL。
+ * 通过真实指针事件点击 Boss 左侧 `.menu-list` 中的菜单项，
+ * 并等待导航到给定 pathname（如 `/web/chat/index`）。
  */
 export async function clickBossSidebarMenuToPath(
   page: Page,
   menuLabel: string,
   targetPath: string,
 ): Promise<void> {
-  const clicked = (await page.evaluate(
+  const params = JSON.stringify({ label: menuLabel, path: targetPath });
+  const targetIndex = (await page.evaluate(
     `(({ label, path }) => {
       const norm = (v) => (v ?? "").replace(/\\s+/g, "");
       const links = Array.from(document.querySelectorAll(".menu-list a"));
-      const target = links.find((a) => {
+      return links.findIndex((a) => {
         const href = a.getAttribute("href") ?? "";
         if (href.includes(path)) {
           return true;
@@ -37,32 +35,28 @@ export async function clickBossSidebarMenuToPath(
         const text = norm(a.querySelector(".menu-item-content span")?.textContent ?? a.textContent);
         return text.includes(label);
       });
-      if (!(target instanceof HTMLElement)) {
-        return false;
-      }
-      target.scrollIntoView({ block: "center", inline: "nearest" });
-      target.click();
-      return true;
-    })`,
-    { label: menuLabel, path: targetPath },
-  )) as boolean;
+    })(${params})`,
+  )) as number;
 
-  if (!clicked) {
+  if (targetIndex < 0) {
     throw new Error(`未找到侧边栏菜单“${menuLabel}”，无法跳转到 ${targetPath}。`);
   }
 
+  const links = await page.$$('.menu-list a');
+  const target = links[targetIndex];
+  if (!target) {
+    throw new Error(`侧边栏菜单“${menuLabel}”在点击前发生变化，无法跳转到 ${targetPath}。`);
+  }
+  await target.click();
   await sleepRandom(SIDEBAR_NAV_AFTER_CLICK_MS.min, SIDEBAR_NAV_AFTER_CLICK_MS.max);
 
-  const pathReached = buildPathReachedPredicate();
-
+  const pathReached = buildPathReachedPredicate(targetPath);
   try {
-    await page.waitForFunction(pathReached, { timeout: SIDEBAR_CLICK_NAV_WAIT_MS }, targetPath);
-    return;
-  } catch {
-    // 合成点击未导航（Boss v10718+），回退到直接 goto 目标 URL。
+    await page.waitForFunction(pathReached, { timeout: SIDEBAR_NAV_WAIT_MS });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `点击侧边栏菜单“${menuLabel}”后未进入 ${targetPath}；当前 URL=${page.url()}；${message}`,
+    );
   }
-
-  const targetUrl = new URL(targetPath, page.url()).toString();
-  await page.goto(targetUrl, { waitUntil: 'load', timeout: 60_000 });
-  await page.waitForFunction(pathReached, { timeout: SIDEBAR_NAV_WAIT_MS }, targetPath);
 }

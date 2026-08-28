@@ -89,10 +89,10 @@ async function fileExists(target) {
 async function readJobsFromFrame(frame) {
     return (await frame.evaluate(`(() => {
       const norm = (v) => (v ?? "").replace(/\\s+/g, " ").trim();
-      const rows = Array.from(document.querySelectorAll(".job-jobInfo-warp"));
+      const rows = Array.from(document.querySelectorAll(".job-item-container"));
       const jobs = rows.map((el) => {
         const statusText = norm(el.querySelector(".job-status-wrapper .status-box")?.textContent);
-        const labelText = norm(el.querySelector(".job-title .label-common")?.textContent);
+        const labelText = norm(el.querySelector(".job-labels .base-label")?.textContent);
         const meta = Array.from(el.querySelectorAll(".job-main-info-wrapper .info-labels span"))
           .map((x) => norm(x.textContent))
           .filter(Boolean);
@@ -100,7 +100,7 @@ async function readJobsFromFrame(frame) {
           .map((x) => norm(x.textContent));
         return {
           id: norm(el.getAttribute("data-id")),
-          title: norm(el.querySelector(".job-title a")?.textContent),
+          title: norm(el.querySelector(".job-name")?.textContent),
           label: labelText,
           status: statusText,
           meta,
