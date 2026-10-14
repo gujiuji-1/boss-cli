@@ -1,11 +1,4 @@
 # boss-cli — Boss直聘自动化 CLI | 批量发消息 · 自动打招呼 · AI Agent 招聘工具
-
-[![npm version](https://img.shields.io/npm/v/@joohw/boss-cli)](https://www.npmjs.com/package/@joohw/boss-cli)
-[![npm downloads](https://img.shields.io/npm/dm/@joohw/boss-cli)](https://www.npmjs.com/package/@joohw/boss-cli)
-[![license](https://img.shields.io/github/license/joohw/boss-cli)](./LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/joohw/boss-cli)](https://github.com/joohw/boss-cli)
-
-
 **boss-cli**（`@joohw/boss-cli`）是开源的 **Boss直聘自动化命令行工具**。基于 Puppeteer / CDP 协议驱动本机 Chrome，无需 Selenium，把 Boss直聘 B 端的核心 HR 操作搬进终端：**候选人列表**、**批量发消息**、**自动打招呼**、**在线简历预览**、**深度搜索**、**职位管理**。
 
 适合 HR 日常提效，也适合 Claude / GPT / Gemini 等 **AI Agent** 通过子进程调用，搭建全自动化招聘流水线。
@@ -43,9 +36,6 @@ boss help
 ```
 
 ### 安装本 fork（含尚未进入上游的修复）
-
-本仓库是 [`joohw/boss-cli`](https://github.com/joohw/boss-cli) 的 fork，包含风控页反弹熔断等
-上游尚未发布的修复，以 `@viyzhu/boss-cli-fork` 单独发布：
 
 ```bash
 npm install -g @viyzhu/boss-cli-fork@latest
@@ -219,15 +209,6 @@ npm run dev     # build + 交互模式
 
 ## 发布
 
-仓库通过 GitHub Actions 自动发布，工作流文件是 `.github/workflows/tag-publish.yml`。
-
-发布新版本时，本地只需要更新 `package.json` 版本号、提交代码、创建并推送 `v*` tag：
-
-```bash
-git tag -a v0.7.0 -m "v0.7.0"
-git push origin main
-git push origin v0.7.0
-```
 
 tag 推送后，workflow 会自动安装依赖、构建、检查 npm 版本、发布、更新 `latest` dist-tag，并创建或更新 GitHub Release。
 本地不需要手动执行 `npm publish`。
