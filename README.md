@@ -5,7 +5,6 @@
 [![license](https://img.shields.io/github/license/joohw/boss-cli)](./LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/joohw/boss-cli)](https://github.com/joohw/boss-cli)
 
-官网主页：[boss-cli.com](https://boss-cli.com)
 
 **boss-cli**（`@joohw/boss-cli`）是开源的 **Boss直聘自动化命令行工具**。基于 Puppeteer / CDP 协议驱动本机 Chrome，无需 Selenium，把 Boss直聘 B 端的核心 HR 操作搬进终端：**候选人列表**、**批量发消息**、**自动打招呼**、**在线简历预览**、**深度搜索**、**职位管理**。
 
@@ -245,17 +244,4 @@ npm 发布依赖仓库 Secret `NPM_TOKEN`；**没配这个 secret 时 workflow �
 `NPM_TOKEN secret is missing; skipping publish.` 然后跳过发布，tag 推送本身仍然"成功"**——
 所以推完 tag 要去 Actions 里确认那一步真的跑了。同名同版本已发布过时也会跳过。
 
----
 
-## 许可
-
-[GPL-3.0](./LICENSE)
-
----
-
-## 相关链接
-
-- 官网：[boss-cli.com](https://boss-cli.com)
-- npm：[@joohw/boss-cli](https://www.npmjs.com/package/@joohw/boss-cli)
-- GitHub：[joohw/boss-cli](https://github.com/joohw/boss-cli)
-- 问题反馈：[Issues](https://github.com/joohw/boss-cli/issues)
